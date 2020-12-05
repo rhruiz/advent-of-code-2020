@@ -1,11 +1,7 @@
 require 'minitest/test'
 
 def seat_id(pass)
-  # BFFFBBFRRR
-  row = pass.chars.take(7).map { |chr| chr == "F" ? 0 : 1 }
-  col = pass.chars.drop(7).map { |chr| chr == "L" ? 0 : 1 }
-
-  row.join.to_i(2) * 8 + col.join.to_i(2)
+  pass.chars.reduce(0) { |num, chr| (num << 1) + (%w[F L].member?(chr) ? 0 : 1) }
 end
 
 class Test < Minitest::Test
