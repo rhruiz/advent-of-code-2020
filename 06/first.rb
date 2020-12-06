@@ -9,7 +9,6 @@ def count_yes_anwers(file)
     .reduce(0) { |count, group| count + Set.new(group.flat_map { |ans| ans.strip.chars }).length }
 end
 
-
 class YesCounterTest < Minitest::Test
   def test_with_sample_input
     assert_equal 11, count_yes_anwers("input.sample.txt")
