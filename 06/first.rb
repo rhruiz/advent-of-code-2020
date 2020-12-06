@@ -3,11 +3,10 @@ require 'minitest/unit'
 
 def count_yes_anwers(file)
   File
-    .read(file)
-    .split(/\n\n/)
-    .map { |group| Set.new(group.lines.map(&:strip).flat_map(&:chars)) }
-    .map(&:length)
-    .reduce(&:+)
+    .open(file, 'r')
+    .chunk_while { |fc, sc| fc != "\n" && sc != "\n" }
+    .reject { |e| e == ["\n"] }
+    .reduce(0) { |count, group| count + Set.new(group.flat_map { |ans| ans.strip.chars }).length }
 end
 
 

@@ -1,20 +1,20 @@
 require 'set'
 require 'minitest/unit'
 
+def frequencies(hash)
+  hash.each_with_object(Hash.new { |_key| 0 }) do |key, acc|
+    acc[key] += 1
+  end
+end
+
 def count_all_yes(file)
   File
-    .read(file)
-    .split(/\n\n/)
-    .map { |group|
-      answers = group.lines.map(&:strip).map(&:chars)
-
-      [answers.length, answers.each_with_object(Hash.new { |_key| 0 }) do |answer, acc|
-        answer.each { |letter| acc[letter] += 1 }
-      end]
-    }
+    .open(file, 'r')
+    .chunk_while { |fc, sc| fc != "\n" && sc != "\n" }
+    .reject { |e| e == ["\n"] }
+    .map { |group| [group.length, frequencies(group.flat_map { |ans| ans.strip.chars })] }
     .map { |(size, answers)| answers.keep_if { |_letter, count| count == size } }
-    .map(&:length)
-    .reduce(&:+)
+    .reduce(0) { |count, all_yes| count + all_yes.length }
 end
 
 class CountAllYes < Minitest::Test
