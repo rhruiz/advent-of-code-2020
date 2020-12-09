@@ -1,4 +1,13 @@
 defmodule Asm do
+  @moduledoc """
+  A very simple virtual machine
+  """
+
+  @type t :: map()
+  @type number :: non_neg_integer()
+  @type instruction :: {atom(), integer()}
+
+  @spec parse(String.t()) :: t()
   def parse(file) do
     file
     |> File.stream!()
@@ -41,13 +50,14 @@ defmodule Asm do
         run_program(program, index + 1, acc, visited)
 
       {_, {:acc, value}} ->
-        run_program(program, index +  1, acc + value, visited)
+        run_program(program, index + 1, acc + value, visited)
 
       {_, {:jmp, delta}} ->
         run_program(program, index + delta, acc, visited)
     end
   end
 
+  @spec patch(t(), line()) :: t()
   def patch(program, index) do
     Map.update!(program, index, fn
       {:jmp, value} -> {:nop, value}
