@@ -13,18 +13,24 @@ defmodule Asm do
     end)
   end
 
-  defp incr(visited, index) do
+  defp visit(visited, index) do
     Map.update(visited, index, 1, fn count -> count + 1 end)
   end
 
+  @spec at(t(), number()) :: instruction()
+  def at(program, line) do
+    Map.get(program, line)
+  end
+
+  @spec run(t()) :: {:ok, integer()} | {:error, reason :: atom(), line(), integer()}
   def run(program) do
     run_program(program, 0, 0, %{})
   end
 
   defp run_program(program, index, acc, visited) do
-    visited = incr(visited, index)
+    visited = visit(visited, index)
 
-    case {Map.get(visited, index), Map.get(program, index)} do
+    case {Map.get(visited, index), at(program, index)} do
       {_, nil} ->
         {:ok, acc}
 

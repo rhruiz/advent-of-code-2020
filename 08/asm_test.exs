@@ -24,13 +24,22 @@ defmodule AsmTest do
     end
   end
 
+  describe "at/2" do
+    test "returns the instruction at the given index" do
+      assert {:acc, -99} ==
+               "input.sample.txt"
+               |> Asm.parse()
+               |> Asm.at(5)
+    end
+  end
+
   describe "patch/2" do
     test "alters nop -> jmp in program at the given index" do
       assert {:jmp, 0} ==
                "input.sample2.txt"
                |> Asm.parse()
                |> Asm.patch(0)
-               |> Map.get(0)
+               |> Asm.at(0)
     end
 
     test "alters jmp -> nop in the program at the given index" do
@@ -38,7 +47,7 @@ defmodule AsmTest do
                "input.sample2.txt"
                |> Asm.parse()
                |> Asm.patch(2)
-               |> Map.get(2)
+               |> Asm.at(2)
     end
 
     test "does not change acc instructions" do
@@ -46,7 +55,7 @@ defmodule AsmTest do
                "input.sample2.txt"
                |> Asm.parse()
                |> Asm.patch(1)
-               |> Map.get(1)
+               |> Asm.at(1)
     end
   end
 end
