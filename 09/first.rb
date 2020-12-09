@@ -24,5 +24,5 @@ end
 
 puts find_broken(parse('input.sample.txt'), 5)
 
-puts find_broken(parse('input.txt'), 25) # not 556543474
+puts find_broken(parse('input.txt'), 25) # 556543474
 
