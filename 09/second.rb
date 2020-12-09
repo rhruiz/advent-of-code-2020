@@ -26,10 +26,18 @@ def find_sum_of(numbers, target)
   numbers
     .each_with_index
     .lazy
-    .flat_map do |_n, index|
+    .map do |_n, index|
       (index...numbers.length).map { |candidate| numbers[index..candidate] }
     end
-    .find { |numbers| numbers.reduce(0, &:+) == target }
+    .find do |ranges|
+      ranges.find(->{[]}) do |numbers|
+        sum = numbers.reduce(0, &:+)
+        sum >= target
+      end.reduce(0, &:+) == target
+    end
+    .find do |numbers|
+      numbers.reduce(0, &:+) == target
+    end
 end
 
 # target = find_broken(parse('input.txt'), 25)
@@ -42,7 +50,9 @@ range = 25
 
 target = find_broken(numbers, range)
 puts target
+
 the_sum = find_sum_of(numbers, target)
+puts the_sum.inspect
 
 puts the_sum.min + the_sum.max
 
