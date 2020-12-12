@@ -11,16 +11,20 @@ DELTAS =
     [-1, 1], [0, 1], [1, 1]
   ]
 
-def occ?(map, (x, y))
-  (map[y] || [])[x] == "#"
+def at(map, (x,y))
+  (map[y] || [])[x]
 end
 
-def empty?(map, (x, y))
-  (map[y] || [])[x] == "L"
+def occ?(map, position)
+  at(map, position) == "#"
 end
 
 def floor?(map, (x, y))
-  (map[y] || [])[x] == "."
+  at(map, position) == "."
+end
+
+def empty?(map, position)
+  ["L", nil].member?(at(map, position))
 end
 
 def apply((x, y), (dx, dy))
@@ -48,10 +52,6 @@ def _acc_arround(map, position, deltas, occ)
   _acc_arround(map, position, new_deltas, occ.concat(more_occ.map { |delta| apply(position, delta) }))
 end
 
-def state(map)
-  map
-end
-
 def render(map)
   map.values.each { |line| puts line.values.join("") }
   puts ""
@@ -61,20 +61,21 @@ end
 
 map = parse('input.sample.txt')
 map = parse('input.txt')
-state = state(map)
 
 rounds = 0
 
 loop do
   render(map)
   rounds = rounds + 1
-
-  new_map = map.each_with_object({}) { |(k, v), acc| acc[k] = v.dup }
+  new_map = {}
 
   map.keys.each do |y|
+    new_map[y] = {}
+
     map[y].keys.each do |x|
-      tile = map[y][x]
-      next if tile == "."
+      new_map[y][x] = map[y][x]
+
+      next if new_map[y][x] == "."
 
       if empty?(map, [x, y]) && occ_around(map, [x, y]) == 0
         new_map[y][x] = "#"
@@ -86,11 +87,9 @@ loop do
     end
   end
 
-  new_state = state(new_map)
-  map = new_map
-  break if new_state == state
+  break if new_map == map
 
-  state = new_state
+  map = new_map
 end
 
 puts rounds
