@@ -48,35 +48,14 @@ defmodule Ferry do
     {position, {wx * -1, wy * -1}}
   end
 
-  def rotate(state, {direction, 270}) do
-    state
-    |> rotate({direction, 90})
-    |> rotate({direction, 180})
-  end
-
-  def rotate({position, {wx, wy}}, {direction, 90}) do
-    rotations = %{
-      {1, 1} => {-1, 1},
-      {-1, 1} => {-1, -1},
-      {-1, -1} => {1, -1},
-      {1, -1} => {1, 1},
-      {1, 0} => {1, 0},
-      {0, 1} => {0, -1},
-      {-1, 0} => {-1, 0},
-      {0, -1} => {0, 1},
-      {0, 0} => {0, 0}
-    }
-
-    normalize = fn
-      0 -> 1
-      n -> floor(n / abs(n))
-    end
-
+  def rotate({position, {wx, wy}}, {direction, angle}) do
     sign = if(direction == :l, do: 1, else: -1)
+    phase = :math.atan2(wy, wx)
+    magnitude = :math.sqrt(wx * wx + wy * wy)
+    new_phase = phase + sign * :math.pi()/180 * angle
+    {x, y} = {round(magnitude * :math.cos(new_phase)), round(magnitude * :math.sin(new_phase))}
 
-    {fx, fy} = Map.get(rotations, {normalize.(wx), normalize.(wy)})
-
-    {position, {abs(wy) * fx * sign, abs(wx) * fy * sign}}
+    {position, {x, y}}
   end
 
   def apply(state, {instruction, amount}) when instruction in [:r, :l] do
