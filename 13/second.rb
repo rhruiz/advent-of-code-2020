@@ -11,16 +11,10 @@ def parse(buses)
 end
 
 def find_match(buses)
-  ts = 0
-  initial = [ts, buses.first.first]
-
-  (ts, _) = buses.drop(1).reduce(initial) do |(ts, step), (bus, delay)|
+  buses.reduce([0, 1]) do |(ts, step), (bus, delay)|
     ts = (ts..).step(step).find { |time| (time+delay) % bus == 0 }
-
     [ts, step * bus]
-  end
-
-  ts
+  end.first
 end
 
 puts find_match(parse(read('input.sample.txt'))) == 1068781
