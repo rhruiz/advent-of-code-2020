@@ -13,50 +13,62 @@ def parse(file)
   end
 end
 
-def addresses(mask, address)
-  address = mask.chars.each_with_index.reduce(address) do |address, (chr, index)|
-    address = apply_mask(35 - index, 1, address) if chr == "1"
-    address
+class Mask
+  attr_reader :x_map
+
+  def find_x(chr)
+    chr == "X"
   end
 
-  find_x = ->(chr) { chr == "X" }
+  def initialize(str)
+    @xs = str.chars.count(&method(:find_x))
 
-  xs = mask.chars.count(&find_x)
+    @x_map = str.chars.each_with_index.map do |chr, index|
+      if find_x(chr)
+        35 - index
+      else
+        nil
+      end
+    end.compact.reverse
 
-  x_map = mask.chars.each_with_index.map do |chr, index|
-    if find_x[chr]
-      35 - index
-    else
-      nil
+    @fixed_mask = str.chars.reduce(0) do |address, chr|
+      bit = case chr
+            when "0" then 0
+            when "1" then 1
+            when "X" then 0
+            end
+      address << 1 | bit
     end
-  end.compact.reverse
-
-  queue = []
-
-  (0...2**xs).each do |mask|
-    new_addr = x_map.each_with_index.reduce(address) do |address, (target_index, mask_index)|
-      apply_mask(target_index, (mask >> mask_index) & 1, address)
-    end
-
-    queue.push(new_addr)
   end
 
-  queue
-end
+  def floating
+    (0...2**@xs)
+  end
 
-def apply_mask(position, bit, value)
-  mask = 1 << position
-  (value & ~mask) | ((bit << position) & mask)
+  def addresses(base_address)
+    address = base_address | @fixed_mask
+
+    floating.lazy.map do |bitmap|
+      @x_map.each_with_index.reduce(address) do |address, (target_index, mask_index)|
+        set_bit(address, target_index, (bitmap >> mask_index) & 1)
+      end
+    end
+  end
+
+  def set_bit(target, position, bit)
+    mask = 1 << position
+    (target & ~mask) | ((bit << position) & mask)
+  end
 end
 
 memory = parse('input.txt').reduce([[], {}]) do |(mask, memory), instruction|
   case instruction.first
   when :mask
-    [instruction.last, memory]
+    [Mask.new(instruction.last), memory]
   when :mem
     (_, position, value) = instruction
 
-    addresses(mask, position).each do |position|
+    mask.addresses(position).each do |position|
       memory[position] = value
     end
 
