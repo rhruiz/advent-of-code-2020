@@ -14,30 +14,19 @@ def parse(file)
 end
 
 class Mask
-  attr_reader :x_map
-
-  def find_x(chr)
-    chr == "X"
-  end
-
   def initialize(str)
-    @xs = str.chars.count(&method(:find_x))
-
-    @x_map = str.chars.each_with_index.map do |chr, index|
-      if find_x(chr)
-        35 - index
+    @x_map = str.chars.reverse.each_with_index.flat_map do |chr, index|
+      if chr == "X"
+        index
       else
-        nil
+        []
       end
-    end.compact.reverse
+    end
+
+    @xs = @x_map.size
 
     @fixed_mask = str.chars.reduce(0) do |address, chr|
-      bit = case chr
-            when "0" then 0
-            when "1" then 1
-            when "X" then 0
-            end
-      address << 1 | bit
+      address << 1 | if chr == "1" then 1 else 0 end
     end
   end
 
@@ -55,13 +44,15 @@ class Mask
     end
   end
 
+  private
+
   def set_bit(target, position, bit)
     mask = 1 << position
     (target & ~mask) | ((bit << position) & mask)
   end
 end
 
-memory = parse('input.txt').reduce([[], {}]) do |(mask, memory), instruction|
+memory = parse('input.txt').reduce([nil, {}]) do |(mask, memory), instruction|
   case instruction.first
   when :mask
     [Mask.new(instruction.last), memory]
