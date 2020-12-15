@@ -14,23 +14,20 @@ def parse(file)
 end
 
 def mask(mask)
-  # returns [mask, position, value]
-  mask
-    .chars.each_with_index.map do |chr, index|
-      case chr
-      when "0"
-        [1 << 35 - index, 35 - index, 0]
-      when "1"
-        [1 << 35 - index, 35 - index, 1]
-      when "X"
+  # returns [position, bit]
+  mask.chars.each_with_index.map do |chr, index|
+      if chr == "X"
         nil
+      else
+        [35 - index, chr.to_i]
       end
     end
     .compact
 end
 
 def apply_mask(mask, value)
-  mask.reduce(value) do |value, (mask, position, bit)|
+  mask.reduce(value) do |value, (position, bit)|
+    mask = 1 << position
     (value & ~mask) | ((bit << position) & mask)
   end
 end
