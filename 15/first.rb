@@ -6,30 +6,31 @@ numbers = [7, 14, 0, 17, 11, 1, 2]
 
 def compute(numbers)
   last_number = numbers.last
+  initial = numbers.length
 
-  numbers = numbers.each_with_index.each_with_object(Hash.new) do |(n, idx), acc|
+  numbers = numbers.each_with_index.each_with_object({}) do |(n, idx), acc|
     acc[n] = [idx]
   end
-
-  initial = numbers.length
 
   (initial..).lazy.map do |turn|
     numbers[last_number] ||= []
 
-    if numbers[last_number].length > 1
-      new_number = numbers[last_number].take(2).reduce(&:-)
+    new_number =
+      if numbers[last_number].length > 1
+        numbers[last_number].take(2).reduce(&:-)
+      else
+        0
+      end
 
-      numbers[new_number] ||= []
-      numbers[new_number].unshift(turn)
-    else
-      numbers[0] ||= []
-      numbers[0].unshift(turn)
+    numbers[last_number] = numbers[last_number].take(2)
 
-      new_number = 0
-    end
+    numbers[new_number] ||= []
+    numbers[new_number].unshift(turn)
+
+    puts numbers.inspect
 
     last_number = new_number
-  end.drop(2019-initial).take(1).to_a.first
+  end.drop(2019-initial).first
 end
 
 puts compute(numbers).inspect
