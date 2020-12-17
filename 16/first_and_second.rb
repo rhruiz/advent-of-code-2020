@@ -35,27 +35,28 @@ def error_rate(tickets, validation)
 end
 
 def find_field_order(validation, tickets, length)
-    possibilities = (0...length).to_a.map do |position|
-      [position, Set.new(validation.keys.select do |field|
-        tickets.all? do |ticket|
-          validation[field].any? { |range| range.member?(ticket[position]) }
-        end
-      end)]
-    end
+  possibilities = (0...length).to_a.map do |position|
+    [position, Set.new(validation.keys.select do |field|
+      tickets.all? do |ticket|
+        validation[field].any? { |range| range.member?(ticket[position]) }
+      end
+    end)]
+  end
 
-    figure_out_fields(possibilities.sort_by { |e| e.last.length }, {})
+  figure_out_fields(possibilities.sort_by { |e| e.last.length })
 end
 
-def figure_out_fields(possibilities, certain)
+def figure_out_fields(possibilities, certain = {})
   return certain if possibilities.empty?
 
   (position, fields) = possibilities.shift
 
   if fields.length == 1
+    field = fields.first
     certain[fields.first] = position
-    possibilities.each { |(pos, possible_fields)| possible_fields.delete(fields.first) }
+    possibilities.each { |(_pos, possible_fields)| possible_fields.delete(field) }
   else
-    possibilities.push(poss)
+    possibilities.push([position, fields])
   end
 
   figure_out_fields(possibilities, certain)
@@ -65,15 +66,15 @@ class ValidationTest < Minitest::Test
   def test_sample_input_valid_tickets
     validation = parse('input.sample.txt').first
 
-    refute invalid?([7,3,47], validation)
-    assert invalid?([40,4,50], validation)
-    assert invalid?([55,2,20], validation)
-    assert invalid?([38,6,12], validation)
+    refute invalid?([7, 3, 47], validation)
+    assert invalid?([40, 4, 50], validation)
+    assert invalid?([55, 2, 20], validation)
+    assert invalid?([38, 6, 12], validation)
   end
 
   def test_sample_input_error_rate
     validation = parse('input.sample.txt').first
-    tickets = [[7,3,47], [40,4,50], [55,2,20], [38,6,12]]
+    tickets = [[7, 3, 47], [40, 4, 50], [55, 2, 20], [38, 6, 12]]
 
     assert_equal 71, error_rate(tickets, validation)
   end
