@@ -6,9 +6,11 @@ def parse(file)
   decks.map { |deck| deck.split("\n").drop(1).map { |l| l.strip.to_i } }
 end
 
-def game(decks)
+def game(decks, depth)
   previous = Set.new
   rounds = 0
+
+  return [0, []] if depth > 0 and (decks[0].max >= decks[1].max)
 
   loop do
     return [0, decks] if previous.member?(decks)
@@ -22,7 +24,7 @@ def game(decks)
 
     winner =
       if decks[0].length >= draw[0] && decks[1].length >= draw[1]
-        game([decks[0].take(draw[0]), decks[1].take(draw[1])]).first
+        game([decks[0].take(draw[0]), decks[1].take(draw[1])], depth + 1).first
       else
         draw[0] > draw[1] ? 0 : 1
       end
@@ -40,7 +42,7 @@ def score(decks)
   end
 end
 
-(winner, decks) = game(parse('input.txt'))
+(winner, decks) = game(parse('input.txt'), 0)
 
 puts "#{winner+1} wins"
 puts score(decks)
