@@ -75,11 +75,9 @@ defmodule Hex do
   def black_neighbors(map, {x, y}) do
     @deltas
     |> Map.values()
-    |> Enum.map(fn {dx, dy} ->
-      Map.get(map, {x + dx, y + dy}, :white)
+    |> Enum.count(fn {dx, dy} ->
+      Map.get(map, {x + dx, y + dy}) == :black
     end)
-    |> Enum.frequencies()
-    |> Map.get(:black, 0)
   end
 
   def flip_all(map) do
@@ -97,12 +95,9 @@ defmodule Hex do
   end
 end
 
-map = "input.txt" |> Hex.paint_all()
+map = Hex.paint_all("input.txt")
 
 0..99
-|> Enum.reduce(map, fn day, map ->
-  map = Hex.flip_all(map)
-  IO.puts "Day #{day + 1}: #{Hex.blacks(map)}"
-
-  map
-end)
+|> Enum.reduce(map, fn _day, map -> Hex.flip_all(map) end)
+|> Hex.blacks()
+|> IO.puts()
