@@ -64,24 +64,19 @@ defmodule Camera do
   end
 
   def rotate(%Tile{} = tile) do
-    max = length(tile.lines) - 1
-
-    Tile.new(
-      tile.id,
-      Enum.map(max..0, fn index ->
-        column(tile, index)
-      end)
-    )
+    Tile.new(tile.id, rotate(tile.lines))
   end
 
   def rotate(%Picture{} = picture) do
-    max = length(picture.lines) - 1
+    Picture.new(rotate(picture.lines))
+  end
 
-    Picture.new(
-      Enum.map(max..0, fn index ->
-        column(picture, index)
-      end)
-    )
+  def rotate(list) do
+    max = length(list) - 1
+
+    Enum.map(max..0, fn index ->
+      column(list, index)
+    end)
   end
 
   def variations(variable) do
@@ -89,10 +84,6 @@ defmodule Camera do
     |> Stream.iterate(&rotate/1)
     |> Stream.take(4)
     |> Stream.concat(Stream.iterate(flip(variable), &rotate/1) |> Stream.take(4))
-  end
-
-  def column(%{lines: lines}, index) do
-    column(lines, index)
   end
 
   def column(lines, index) do
@@ -256,19 +247,6 @@ defmodule Camera do
       end)
       |> elem(1)
 
-    build_column = fn map, tiles, x, head ->
-      map = Map.put(map, {x, 0}, head)
-
-      1..(square_side - 1)
-      |> Enum.reduce({map, tiles}, fn y, {map, tiles} ->
-        position = {x, y}
-        {tile, tiles} = find_neighbor(tiles, map[{x, y - 1}], 2)
-        map = Map.put(map, position, tile)
-
-        {map, tiles}
-      end)
-    end
-
     tiles = Map.delete(tiles, corner.id)
     map = %{{0, 0} => corner}
 
@@ -283,7 +261,12 @@ defmodule Camera do
 
         tiles = Map.delete(tiles, map[{x, 0}].id)
 
-        build_column.(map, tiles, x, map[{x, 0}])
+        1..(square_side - 1)
+        |> Enum.reduce({map, tiles}, fn y, {map, tiles} ->
+          {tile, tiles} = find_neighbor(tiles, map[{x, y - 1}], 2)
+
+          {Map.put(map, {x, y}, tile), tiles}
+        end)
       end)
 
     if map_size(tiles) > 0 do
