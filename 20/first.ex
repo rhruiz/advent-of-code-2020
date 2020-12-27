@@ -114,3 +114,4 @@ tiles
 end)
 |> Enum.map(&elem(&1, 0))
 |> Enum.reduce(1, &Kernel.*/2)
+|> IO.inspect()
