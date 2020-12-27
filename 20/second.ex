@@ -55,26 +55,16 @@ defmodule Camera do
     end)
   end
 
-  def flip(%Tile{} = tile) do
-    Tile.new(tile.id, Enum.reverse(tile.lines))
-  end
+  def flip(%Tile{} = tile), do: Tile.new(tile.id, Enum.reverse(tile.lines))
 
-  def flip(%Picture{} = picture) do
-    Picture.new(Enum.reverse(picture.lines))
-  end
+  def flip(%Picture{} = picture), do: Picture.new(Enum.reverse(picture.lines))
 
-  def rotate(%Tile{} = tile) do
-    Tile.new(tile.id, rotate(tile.lines))
-  end
+  def rotate(%Tile{} = tile), do: Tile.new(tile.id, rotate(tile.lines))
 
-  def rotate(%Picture{} = picture) do
-    Picture.new(rotate(picture.lines))
-  end
+  def rotate(%Picture{} = picture), do: Picture.new(rotate(picture.lines))
 
   def rotate(list) do
-    max = length(list) - 1
-
-    Enum.map(max..0, fn index ->
+    Enum.map((length(list) - 1)..0, fn index ->
       column(list, index)
     end)
   end
