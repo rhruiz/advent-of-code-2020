@@ -108,7 +108,9 @@ defmodule Camera do
         end).()
   end
 
-  def big_picture(map, square_side) do
+  def big_picture(map) do
+    square_side = map |> map_size() |> :math.sqrt() |> floor()
+
     0..(square_side - 1)
     |> Enum.flat_map(fn y ->
       0..(square_side - 1)
@@ -229,8 +231,9 @@ defmodule Camera do
   end
 
   def build_picture(input) do
-    {map, square_side} = build_map(input)
-    big_picture(map, square_side)
+    input
+    |> build_map()
+    |> big_picture()
   end
 
   def build_map(input) do
@@ -250,30 +253,25 @@ defmodule Camera do
     tiles = Map.delete(tiles, corner.id)
     map = %{{0, 0} => corner}
 
-    {map, tiles} =
-      Enum.reduce(0..(square_side - 1), {map, tiles}, fn x, {map, tiles} ->
-        map =
-          Map.put_new_lazy(map, {x, 0}, fn ->
-            tiles
-            |> Camera.find_neighbor(map[{x - 1, 0}], 1)
-            |> elem(0)
-          end)
-
-        tiles = Map.delete(tiles, map[{x, 0}].id)
-
-        1..(square_side - 1)
-        |> Enum.reduce({map, tiles}, fn y, {map, tiles} ->
-          {tile, tiles} = find_neighbor(tiles, map[{x, y - 1}], 2)
-
-          {Map.put(map, {x, y}, tile), tiles}
+    0..(square_side - 1)
+    |> Enum.reduce({map, tiles}, fn x, {map, tiles} ->
+      map =
+        Map.put_new_lazy(map, {x, 0}, fn ->
+          tiles
+          |> Camera.find_neighbor(map[{x - 1, 0}], 1)
+          |> elem(0)
         end)
+
+      tiles = Map.delete(tiles, map[{x, 0}].id)
+
+      1..(square_side - 1)
+      |> Enum.reduce({map, tiles}, fn y, {map, tiles} ->
+        {tile, tiles} = find_neighbor(tiles, map[{x, y - 1}], 2)
+
+        {Map.put(map, {x, y}, tile), tiles}
       end)
-
-    if map_size(tiles) > 0 do
-      raise "There are tiles left"
-    end
-
-    {map, square_side}
+    end)
+    |> elem(0)
   end
 end
 
