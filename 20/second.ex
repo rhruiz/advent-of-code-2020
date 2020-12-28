@@ -102,24 +102,23 @@ defmodule Camera do
     square_side = map |> map_size() |> :math.sqrt() |> floor()
 
     0..(square_side - 1)
-    |> Enum.flat_map(fn y ->
+    |> Stream.flat_map(fn y ->
       0..(square_side - 1)
-      |> Enum.map(fn x ->
-        map
-        |> Map.get({x, y})
-        |> Map.get(:lines)
+      |> Stream.map(fn x ->
+        map[{x, y}].lines
         |> Enum.drop(1)
         |> Enum.take(8)
         |> Enum.map(fn line -> line >>> 1 &&& 0b11111111 end)
       end)
-      |> Enum.zip()
-      |> Enum.map(&Tuple.to_list/1)
-      |> Enum.map(fn line ->
+      |> Stream.zip()
+      |> Stream.map(&Tuple.to_list/1)
+      |> Stream.map(fn line ->
         Enum.reduce(line, fn int, acc ->
           acc <<< 8 ||| int
         end)
       end)
     end)
+    |> Enum.into([])
     |> Picture.new()
   end
 
@@ -155,10 +154,7 @@ defmodule Camera do
         end)
         |> Kernel.+(count)
       end)
-      |> (fn
-            0 -> nil
-            other -> other
-          end).()
+      |> (&if(&1 > 0, do: &1, else: nil)).()
     end)
   end
 
@@ -200,8 +196,8 @@ defmodule Camera do
 
     corner_borders =
       tiles
-      |> Enum.flat_map(fn {_id, tile} ->
-        tile.borders ++ flipped.(tile.borders)
+      |> Enum.flat_map(fn {_id, %{borders: borders}} ->
+        borders ++ flipped.(borders)
       end)
       |> Enum.frequencies()
       |> Enum.filter(&match?({_border, 1}, &1))
